@@ -531,5 +531,6 @@ function handleError(error) {
 </body>
 </html>
 ```
-> 源码地址：https://github.com/QiuYang01/Video-Base-On-PeerJS[添加链接描述](https://github.com/QiuYang01/Video-Base-On-PeerJS)
-> 预览地址：[https://map.gnnu.work/rm21/qy/video/videoself.html](https://map.gnnu.work/rm21/qy/video/videoself.html)
+> 源码地址：[https://github.com/QiuYang01/Video-Base-On-PeerJS](https://github.com/QiuYang01/Video-Base-On-PeerJS)
+
+>预览地址：[https://map.gnnu.work/rm21/qy/video/videoself.html](https://map.gnnu.work/rm21/qy/video/videoself.html)
