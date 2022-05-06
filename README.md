@@ -1,3 +1,5 @@
+
+<h1>本仓库为使用peerJS实现点对点视频聊天的例子。</h1>
 > 建议先过一遍之前的[这篇文章](https://blog.csdn.net/qq_43548154/article/details/124554150)，很多基础的api本文将不再介绍。
 
 本文涉及到的新api为peer.call()
