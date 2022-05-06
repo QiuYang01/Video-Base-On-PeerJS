@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视频聊天</title>
+  <!-- <script src="https://unpkg.com/peerjs@1.3.2/dist/peerjs.min.js"></script> -->
+  <script src="../js/peerjs.min.js"></script>
+  <script src="./js/jquery-1.12.4.js"></script>
+  <script>
+    var peer = null; 
+    var startId = null; 
+    var receiveId = null;
+    var conn = null;
+    var localStream = null;
+    
+
+    //获取url后面的参数
+    getRequest = function() { 
+        var url = location.search; 
+        var theRequest = new Object(); 
+        if (url.indexOf("?") != -1) { 
+            let str = url.substr(1); 
+            let strs = str.split("&"); 
+            for(let i = 0; i < strs.length; i++) { 
+                theRequest[strs[i].split("=")[0]]=unescape(strs[i].split("=")[1]); 
+            } 
+        } 
+        return theRequest; 
+    }
+
+    //绑定摄像头列表到下拉框
+    function getDevices(deviceInfos) {
+        if (deviceInfos===undefined){
+            return
+        }
+        console.log(`设备信息${deviceInfos}`)
+        for (let i = 0; i !== deviceInfos.length; ++i) {
+          // console.log(deviceInfos[i])
+          const deviceInfo = deviceInfos[i];
+          const option = document.createElement('option');
+          option.value = deviceInfo.deviceId;
+          if (deviceInfo.kind === 'videoinput') {
+              option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`;
+              console.log(option)
+              videoSelect.appendChild(option);
+          }
+        }
+    }
+
+    //获取设备错误
+    function handleError(error) {
+        console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+    }
+
+    //获取流
+    function getStream(stream) {
+        console.log('received local stream');
+        localStream = stream;
+        localVideo.srcObject = localStream; //显示到页面
+        // console.log(`localStream${stream}`)
+    }
+
+    //开启本地摄像头
+    function start() {
+        if (localStream) { //停止
+            localStream.getTracks().forEach(track => {
+                track.stop();
+            });
+        }
+        const videoSource = videoSelect.value;
+        const constraints = {
+            audio: false,
+            video: { width: 320, deviceId: videoSource ? { exact: videoSource } : undefined }
+        };
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(getStream)
+            .then(getDevices)
+            .catch(handleError);
+    }
+
+    //页面加载后 
+    window.onload = function () {
+      var videoSelect = document.querySelector("select#videoSelect")
+      var localVideo = document.querySelector("video#localVideo");
+      if (!navigator.mediaDevices ||
+          !navigator.mediaDevices.getUserMedia) {
+          console.log('webrtc is not supported!');
+          alert("webrtc is not supported!");
+          return;
+      }
+
+      //获取摄像头列表
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then(getDevices)
+        .catch(handleError);
+
+      //改变摄像头重新获取流
+      videoSelect.onchange = start; 
+      start(); //默认直接获取流
+
+
+      //每次使用同一个startId
+      if(localStorage.getItem("startId")==null){
+        startId = new Date().getTime();
+        localStorage.setItem("startId",startId)
+      }else{
+        startId = localStorage.getItem("startId")
+      }
+
+      peer = new Peer(startId);
+      console.log(peer)
+
+      peer.on('open', function(id) {
+        startId = id;
+        console.log('My peer ID is: ' + id);
+        console.log(`接收端链接${location.href}?startId=${startId}`)
+      });
+
+
+      peer.on('connection', function(conn) {
+        console.log("被连接",conn);
+        receiveId = conn.peer;
+        conn.on('data', (data) => {
+            console.log("收到消息",data);
+        });
+      });
+
+      
+
+    }
+  </script>
+</head>
+<body> 
+  <select id="videoSelect" style="width:100%"></select>
+  <video id="localVideo" autoplay controls></video>
+</body>
+</html>
